@@ -1,0 +1,71 @@
+﻿name: Continuous integration
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+on:
+    pull_request:
+        paths:
+            - '**.js'
+            - '**.yml'
+            - '**.json'
+            - '**.ts'
+            - '**.vue'
+            - '**.css'
+
+jobs:
+
+    build-frontend:
+        name: Build frontend
+        runs-on: ubuntu-20.04
+        steps:
+            -   uses: actions/checkout@v2
+            -   uses: actions/setup-node@v3
+                with:
+                    node-version: 18
+            -   name: Install modules
+                run: npm install
+            -   name: Build
+                run: npm run build
+    lint-frontend:
+        name: Lint frontend
+        runs-on: ubuntu-20.04
+        needs: [ build-frontend ]
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+            - name: Install modules
+              run: npm install
+            - name: Perform linting
+              run: npm run lint
+            - name: Perform code formatter
+              run: npm run format-code
+
+    code-analysis:
+        name: Code analysis
+        needs: [ build-frontend, lint-frontend ]
+        runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
+        timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
+        permissions:
+            actions: read
+            contents: read
+            security-events: write
+        
+        strategy:
+            fail-fast: false
+            matrix:
+                language: [ 'javascript-typescript' ]
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v3
+            -   name: Initialize CodeQL
+                uses: github/codeql-action/init@v2
+                with:
+                    languages: ${{ matrix.language }}
+            -   name: Autobuild
+                uses: github/codeql-action/autobuild@v2
+            -   name: Perform CodeQL Analysis
+                uses: github/codeql-action/analyze@v2
+                with:
+                    category: "/language:${{matrix.language}}"
