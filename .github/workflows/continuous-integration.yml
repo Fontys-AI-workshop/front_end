@@ -1,0 +1,42 @@
+﻿name: Continuous integration
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+on:
+  pull_request:
+    paths:
+      - "**.js"
+      - "**.yml"
+      - "**.json"
+      - "**.ts"
+      - "**.vue"
+      - "**.css"
+
+jobs:
+  build-frontend:
+    name: Build frontend
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install modules
+        run: npm install
+      - name: Build
+        run: npm run build
+  lint-frontend:
+    name: Lint frontend
+    runs-on: ubuntu-20.04
+    needs: [build-frontend]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install modules
+        run: npm install
+      - name: Perform linting
+        run: npm run lint
+      - name: Perform code formatter
+        run: npm run format-code
