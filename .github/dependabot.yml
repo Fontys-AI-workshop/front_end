@@ -1,12 +1,16 @@
-﻿version: 2
+﻿# Basic set up for three package managers
+
+version: 2
 updates:
+  # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
+    # Workflow files stored in the default location of `.github/workflows`. (You don't need to specify `/.github/workflows` for `directory`. You can use `directory: "/"`.)
     directory: "/"
-    target-branch: "main"
     schedule:
       interval: "weekly"
+
+  # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/"
-    target-branch: "main"
     schedule:
-      interval: "daily"
+      interval: "weekly"
