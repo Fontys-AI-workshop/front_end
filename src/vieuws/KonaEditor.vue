@@ -79,7 +79,7 @@ onMounted(() => {
 		lastLine.points(newPoints)
 	})
 
-	const select = document.getElementById("tool")
+	const select = document.getElementById("tool") as HTMLInputElement
 	select?.addEventListener("change", function () {
 		mode = select.value
 	})
