@@ -8,7 +8,8 @@
 		"build": "vue-tsc && vite build",
 		"preview": "vite preview",
 		"lint": "eslint --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore .",
-		"format-code": "prettier --check ."
+		"format-code": "prettier --check .",
+		"generate-api-schema": "npx swagger-typescript-api -p http://192.168.8.164:7860/openapi.json -o src/ -n api.generated.ts"
 	},
 	"dependencies": {
 		"konva": "^9.2.3",
