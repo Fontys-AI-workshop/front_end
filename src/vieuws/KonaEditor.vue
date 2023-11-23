@@ -10,13 +10,18 @@
 		{{ result }}
 	</div>
 	<div id="container"></div>
+	<img
+		v-for="image in response?.images"
+		:key="image"
+		:src="'data:image/png;base64,' + image"
+		alt="Test 1" />
 </template>
 
 <script lang="ts" setup>
 import Konva from "konva"
 import Line = Konva.Line
 import { onMounted, ref } from "vue"
-import { Api } from "../api.generated.ts"
+import { Api, TextToImageResponse } from "../api.generated.ts"
 
 const width = window.innerWidth
 const height = window.innerHeight - 25
@@ -86,6 +91,8 @@ onMounted(() => {
 	})
 })
 
+const response = ref<TextToImageResponse>()
+
 function save(): void {
 	const api = new Api({ baseUrl: "http://192.168.8.164:7861" })
 
@@ -131,7 +138,9 @@ function save(): void {
 		},
 	}
 
-	api.sdapi.text2ImgapiSdapiV1Txt2ImgPost(payload).then((r) => console.log(r))
+	api.sdapi.text2ImgapiSdapiV1Txt2ImgPost(payload).then((r) => {
+		return (response.value = r.data)
+	})
 }
 </script>
 
