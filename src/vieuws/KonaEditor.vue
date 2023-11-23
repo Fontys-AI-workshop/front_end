@@ -10,12 +10,18 @@
 		{{ result }}
 	</div>
 	<div id="container"></div>
+	<img
+		v-for="image in response?.images"
+		:key="image"
+		:src="'data:image/png;base64,' + image"
+		alt="Test 1" />
 </template>
 
 <script lang="ts" setup>
 import Konva from "konva"
 import Line = Konva.Line
 import { onMounted, ref } from "vue"
+import { Api, TextToImageResponse } from "../api.generated.ts"
 
 const width = window.innerWidth
 const height = window.innerHeight - 25
@@ -85,8 +91,56 @@ onMounted(() => {
 	})
 })
 
+const response = ref<TextToImageResponse>()
+
 function save(): void {
-	result.value = stage.value?.toDataURL()
+	const api = new Api({ baseUrl: "http://192.168.8.164:7861" })
+
+	const payload = {
+		prompt: "gravestone in graveyard with trees",
+		negative_prompt: "",
+		height: 456,
+		width: 812,
+		batch_size: 4,
+		steps: 40,
+		cfg_scale: 4,
+		enable_hr: true,
+		hr_upscaler: "R-ESRGAN 4x+",
+		alwayson_scripts: {
+			controlnet: {
+				args: [
+					{
+						input_image: stage.value
+							?.toDataURL()
+							.replace("data:image/png;base64,", ""),
+						module: "pidinet_sketch",
+						model: "control_v11p_sd15_scribble [d4ba51ff]",
+						processor_res: 500,
+						// controlnet_guidance: 0.25,
+						control_mode: 1,
+						guidance_start: 0,
+						guidance_end: 0.5,
+					},
+					{
+						input_image: stage.value
+							?.toDataURL()
+							.replace("data:image/png;base64,", ""),
+						module: "lineart",
+						model: "control_v11p_sd15_lineart [43d4be0d]",
+						processor_res: 500,
+						// controlnet_guidance: 0.8,
+						control_mode: 0,
+						guidance_start: 0,
+						guidance_end: 0.2,
+					},
+				],
+			},
+		},
+	}
+
+	api.sdapi.text2ImgapiSdapiV1Txt2ImgPost(payload).then((r) => {
+		return (response.value = r.data)
+	})
 }
 </script>
 
