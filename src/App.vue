@@ -1,24 +1,14 @@
 <template>
-	<KonaEditor></KonaEditor>
+	<v-app>
+		<v-app-bar>
+			<v-app-bar-title> AI Atelier</v-app-bar-title>
+		</v-app-bar>
+		<v-main>
+			<router-view />
+		</v-main>
+	</v-app>
 </template>
 
-<script setup lang="ts">
-import KonaEditor from "./vieuws/KonaEditor.vue"
-</script>
+<script lang="ts" setup></script>
 
-<style scoped>
-.logo {
-	height: 6em;
-	padding: 1.5em;
-	will-change: filter;
-	transition: filter 300ms;
-}
-
-.logo:hover {
-	filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.vue:hover {
-	filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+<style scoped></style>
