@@ -16,7 +16,7 @@
 <script lang="ts" setup>
 import Konva from "konva"
 import { onMounted, ref } from "vue"
-import { Api } from "../api.generated.ts"
+import { Api, TextToImageResponse } from "../api.generated.ts"
 import { AIAtelierStore } from "../store.ts"
 import { useRouter } from "vue-router"
 import Line = Konva.Line
@@ -130,7 +130,7 @@ function save(): void {
 			},
 		},
 	}
-	store.setResponse({})
+	store.setResponse({} as TextToImageResponse)
 	api.sdapi.text2ImgapiSdapiV1Txt2ImgPost(payload).then((r) => {
 		store.setResponse(r.data)
 	})
