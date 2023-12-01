@@ -16,7 +16,7 @@
 <script lang="ts" setup>
 import Konva from "konva"
 import { onMounted, ref } from "vue"
-import { Api, TextToImageResponse } from "../api.generated.ts"
+import { Api } from "../api.generated.ts"
 import { AIAtelierStore } from "../store.ts"
 import { useRouter } from "vue-router"
 import Line = Konva.Line
@@ -48,7 +48,7 @@ onMounted(() => {
 		const pos = stage.value?.getPointerPosition()
 		lastLine = new Konva.Line({
 			stroke: "#df4b26",
-			strokeWidth: 5,
+			strokeWidth: tool.value === "brush" ? 5 : 20,
 			globalCompositeOperation:
 				tool.value === "brush" ? "source-over" : "destination-out",
 			// round cap for smoother lines
@@ -86,13 +86,11 @@ onMounted(() => {
 	})
 })
 
-const response = ref<TextToImageResponse>()
-
 function save(): void {
 	const api = new Api({ baseUrl: "http://192.168.8.164:7860" })
 
 	const payload = {
-		prompt: "gravestone in graveyard with trees",
+		prompt: "",
 		negative_prompt: "",
 		height: height,
 		width: width,
@@ -114,7 +112,7 @@ function save(): void {
 						// controlnet_guidance: 0.25,
 						control_mode: 1,
 						guidance_start: 0,
-						guidance_end: 0.5,
+						guidance_end: 1,
 					},
 					{
 						input_image: stage.value
@@ -126,13 +124,13 @@ function save(): void {
 						// controlnet_guidance: 0.8,
 						control_mode: 0,
 						guidance_start: 0,
-						guidance_end: 0.2,
+						guidance_end: 1,
 					},
 				],
 			},
 		},
 	}
-
+	store.setResponse({})
 	api.sdapi.text2ImgapiSdapiV1Txt2ImgPost(payload).then((r) => {
 		store.setResponse(r.data)
 	})

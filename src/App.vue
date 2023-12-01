@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<v-app-bar>
+		<v-app-bar color="secondary">
 			<v-app-bar-title> AI Atelier</v-app-bar-title>
 		</v-app-bar>
 		<v-main>
