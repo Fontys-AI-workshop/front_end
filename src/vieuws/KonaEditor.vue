@@ -1,37 +1,38 @@
 <template>
-	<h1>Start</h1>
-	Tool:
-	<select id="tool">
-		<option value="brush">Brush</option>
-		<option value="eraser">Eraser</option>
-	</select>
-	<button @click="save">Save</button>
-	<div v-if="result != null">
-		{{ result }}
+	<div class="editor-container">
+		<v-btn-toggle v-model="tool" density="compact" rounded="0">
+			<v-btn value="brush">
+				<v-icon>mdi-pen</v-icon>
+			</v-btn>
+			<v-btn value="eraser">
+				<v-icon>mdi-eraser</v-icon>
+			</v-btn>
+		</v-btn-toggle>
+		<div id="editor"></div>
+		<v-btn @click="save">Lets generate</v-btn>
 	</div>
-	<div id="container"></div>
-	<img
-		v-for="image in response?.images"
-		:key="image"
-		:src="'data:image/png;base64,' + image"
-		alt="Test 1" />
 </template>
 
 <script lang="ts" setup>
 import Konva from "konva"
-import Line = Konva.Line
 import { onMounted, ref } from "vue"
 import { Api, TextToImageResponse } from "../api.generated.ts"
+import { AIAtelierStore } from "../store.ts"
+import { useRouter } from "vue-router"
+import Line = Konva.Line
 
-const width = window.innerWidth
-const height = window.innerHeight - 25
+const width = 720
+const height = 512
 const stage = ref<Konva.Stage>()
-const result = ref<string | null>()
+const tool = ref<string>("brush")
+const router = useRouter()
+
+const store = AIAtelierStore()
 
 onMounted(() => {
 	// first we need Konva core things: stage and layer
 	stage.value = new Konva.Stage({
-		container: "container",
+		container: "editor",
 		width: width,
 		height: height,
 	})
@@ -40,7 +41,6 @@ onMounted(() => {
 	stage.value?.add(layer)
 
 	let isPaint = false
-	let mode = "brush"
 	let lastLine = {} as Line
 
 	stage.value?.on("mousedown touchstart", function () {
@@ -48,9 +48,9 @@ onMounted(() => {
 		const pos = stage.value?.getPointerPosition()
 		lastLine = new Konva.Line({
 			stroke: "#df4b26",
-			strokeWidth: 5,
+			strokeWidth: tool.value === "brush" ? 5 : 20,
 			globalCompositeOperation:
-				mode === "brush" ? "source-over" : "destination-out",
+				tool.value === "brush" ? "source-over" : "destination-out",
 			// round cap for smoother lines
 			lineCap: "round",
 			lineJoin: "round",
@@ -84,23 +84,16 @@ onMounted(() => {
 			.concat([pos?.x as number, pos?.y as number])
 		lastLine.points(newPoints)
 	})
-
-	const select = document.getElementById("tool") as HTMLInputElement
-	select?.addEventListener("change", function () {
-		mode = select.value
-	})
 })
 
-const response = ref<TextToImageResponse>()
-
 function save(): void {
-	const api = new Api({ baseUrl: "http://192.168.8.164:7861" })
+	const api = new Api({ baseUrl: "http://192.168.8.164:7860" })
 
 	const payload = {
-		prompt: "gravestone in graveyard with trees",
+		prompt: "",
 		negative_prompt: "",
-		height: 456,
-		width: 812,
+		height: height,
+		width: width,
 		batch_size: 4,
 		steps: 40,
 		cfg_scale: 4,
@@ -119,7 +112,7 @@ function save(): void {
 						// controlnet_guidance: 0.25,
 						control_mode: 1,
 						guidance_start: 0,
-						guidance_end: 0.5,
+						guidance_end: 1,
 					},
 					{
 						input_image: stage.value
@@ -131,21 +124,31 @@ function save(): void {
 						// controlnet_guidance: 0.8,
 						control_mode: 0,
 						guidance_start: 0,
-						guidance_end: 0.2,
+						guidance_end: 1,
 					},
 				],
 			},
 		},
 	}
-
+	store.setResponse({} as TextToImageResponse)
 	api.sdapi.text2ImgapiSdapiV1Txt2ImgPost(payload).then((r) => {
-		return (response.value = r.data)
+		store.setResponse(r.data)
 	})
+	router.push({ name: "results" })
 }
 </script>
 
 <style scoped>
-#container {
+.editor-container {
+	display: block;
+	margin: 0 auto;
+	width: 720px;
+	padding: 8px;
+}
+
+#editor {
 	background-color: lightgray;
+	max-height: 512px;
+	max-width: 720px;
 }
 </style>
