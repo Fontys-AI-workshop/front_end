@@ -12,7 +12,7 @@
 		"generate-api-schema": "npx swagger-typescript-api -p http://192.168.8.164:7860/openapi.json -o src/ -n api.generated.ts"
 	},
 	"dependencies": {
-		"konva": "^9.3.0",
+		"konva": "^9.3.1",
 		"pinia": "^2.1.7",
 		"vue": "^3.4.15",
 		"vue-router": "^4.2.5",
